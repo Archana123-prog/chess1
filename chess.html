@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Master - Play Chess Online</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            color: #ecf0f1;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            background: linear-gradient(to right, #f8f8f8, #e0e0e0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+        }
+        
+        .chess-section {
+            flex: 1;
+            min-width: 350px;
+            max-width: 600px;
+            background: rgba(25, 42, 86, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            width: 100%;
+            aspect-ratio: 1/1;
+            border: 4px solid #2c3e50;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+        
+        .square {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .square.light {
+            background-color: #f0d9b5;
+        }
+        
+        .square.dark {
+            background-color: #b58863;
+        }
+        
+        .square.selected {
+            background-color: rgba(155, 89, 182, 0.6);
+        }
+        
+        .square.valid-move::after {
+            content: '';
+            position: absolute;
+            width: 25%;
+            height: 25%;
+            background-color: rgba(46, 204, 113, 0.6);
+            border-radius: 50%;
+        }
+        
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .player-info {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            min-width: 120px;
+        }
+        
+        .player-white {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #f0d9b5;
+        }
+        
+        .player-black {
+            background: rgba(0, 0, 0, 0.1);
+            border: 2px solid #b58863;
+        }
+        
+        .player-turn {
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.7);
+            transform: scale(1.05);
+        }
+        
+        .player-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .player-timer {
+            font-size: 1.3rem;
+            font-family: monospace;
+        }
+        
+        .moves-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(25, 42, 86, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+        }
+        
+        .moves-container {
+            height: 300px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .moves-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            counter-reset: move-counter;
+        }
+        
+        .move {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        
+        .move:hover {
+            background: rgba(52, 152, 219, 0.3);
+        }
+        
+        .move-number {
+            min-width: 30px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .move-white, .move-black {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            background: rgba(25, 42, 86, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #ecf0f1;
+        }
+        
+        .feature-description {
+            font-size: 1rem;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .chess-section, .moves-section {
+                width: 100%;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chess"></i> CHESS MASTER</h1>
+            <p class="subtitle">Play chess against the computer or challenge friends. Improve your strategy with every move.</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="chess-section">
+                <h2 class="section-title"><i class="fas fa-chess-board"></i> Game Board</h2>
+                
+                <div class="game-info">
+                    <div class="player-info player-white player-turn">
+                        <div class="player-name">White (You)</div>
+                        <div class="player-timer">15:00</div>
+                    </div>
+                    <div class="player-info player-black">
+                        <div class="player-name">Black (Computer)</div>
+                        <div class="player-timer">15:00</div>
+                    </div>
+                </div>
+                
+                <div class="chessboard" id="chessboard">
+                    <!-- Chessboard will be generated by JavaScript -->
+                </div>
+                
+                <div class="game-controls">
+                    <button class="btn btn-primary"><i class="fas fa-undo"></i> Undo Move</button>
+                    <button class="btn btn-danger"><i class="fas fa-redo"></i> New Game</button>
+                    <button class="btn btn-success"><i class="fas fa-robot"></i> Hint</button>
+                    <button class="btn btn-primary"><i class="fas fa-cog"></i> Settings</button>
+                </div>
+            </div>
+            
+            <div class="moves-section">
+                <h2 class="section-title"><i class="fas fa-history"></i> Move History</h2>
+                <div class="moves-container">
+                    <div class="moves-list" id="movesList">
+                        <!-- Move history will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <h2 class="section-title"><i class="fas fa-trophy"></i> Game Status</h2>
+                <div class="game-status">
+                    <div style="text-align: center; padding: 20px; background: rgba(46, 204, 113, 0.2); border-radius: 10px;">
+                        <h3 style="margin-bottom: 15px; color: #2ecc71;">Game in Progress</h3>
+                        <p>It's White's turn to move</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="feature-title">Multiplayer</h3>
+                <p class="feature-description">Play with friends in real-time or challenge players from around the world.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="feature-title">AI Opponent</h3>
+                <p class="feature-description">Multiple difficulty levels from beginner to grandmaster.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3 class="feature-title">Learn Chess</h3>
+                <p class="feature-description">Interactive lessons and puzzles to improve your game.</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Chess Master &copy; 2023 | Play, Learn, Master the Game of Kings</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chessboard = document.getElementById('chessboard');
+            const movesList = document.getElementById('movesList');
+            
+            // Initialize chessboard
+            function initializeChessboard() {
+                chessboard.innerHTML = '';
+                const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+                const pieces = {
+                    0: {8: '♜', 7: '♞', 6: '♝', 5: '♛', 4: '♚', 3: '♝', 2: '♞', 1: '♜'},
+                    1: {0: '♟', 1: '♟', 2: '♟', 3: '♟', 4: '♟', 5: '♟', 6: '♟', 7: '♟'},
+                    6: {0: '♙', 1: '♙', 2: '♙', 3: '♙', 4: '♙', 5: '♙', 6: '♙', 7: '♙'},
+                    7: {0: '♖', 1: '♘', 2: '♗', 3: '♕', 4: '♔', 5: '♗', 6: '♘', 7: '♖'}
+                };
+                
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const square = document.createElement('div');
+                        square.classList.add('square');
+                        square.classList.add((row + col) % 2 === 0 ? 'light' : 'dark');
+                        square.dataset.row = row;
+                        square.dataset.col = col;
+                        
+                        // Add pieces to starting positions
+                        if (pieces[row] && pieces[row][col]) {
+                            square.textContent = pieces[row][col];
+                            square.dataset.piece = pieces[row][col];
+                        }
+                        
+                        // Add coordinates to border squares
+                        if (row === 7) {
+                            const coord = document.createElement('div');
+                            coord.textContent = files[col];
+                            coord.style.position = 'absolute';
+                            coord.style.bottom = '2px';
+                            coord.style.right = '2px';
+                            coord.style.fontSize = '0.8rem';
+                            coord.style.color = (row + col) % 2 === 0 ? '#b58863' : '#f0d9b5';
+                            square.appendChild(coord);
+                        }
+                        
+                        if (col === 0) {
+                            const coord = document.createElement('div');
+                            coord.textContent = 8 - row;
+                            coord.style.position = 'absolute';
+                            coord.style.top = '2px';
+                            coord.style.left = '2px';
+                            coord.style.fontSize = '0.8rem';
+                            coord.style.color = (row + col) % 2 === 0 ? '#b58863' : '#f0d9b5';
+                            square.appendChild(coord);
+                        }
+                        
+                        // Add click event for piece movement
+                        square.addEventListener('click', handleSquareClick);
+                        chessboard.appendChild(square);
+                    }
+                }
+            }
+            
+            // Generate sample move history
+            function generateMoveHistory() {
+                movesList.innerHTML = '';
+                const moves = [
+                    {white: 'e4', black: 'e5'},
+                    {white: 'Nf3', black: 'Nc6'},
+                    {white: 'Bb5', black: 'a6'},
+                    {white: 'Ba4', black: 'Nf6'},
+                    {white: 'O-O', black: 'Be7'},
+                    {white: 'Re1', black: 'b5'},
+                    {white: 'Bb3', black: 'd6'},
+                    {white: 'c3', black: 'O-O'},
+                    {white: 'h3', black: 'Bb7'},
+                    {white: 'd4', black: 'Re8'}
+                ];
+                
+                moves.forEach((move, index) => {
+                    const moveElement = document.createElement('div');
+                    moveElement.classList.add('move');
+                    
+                    moveElement.innerHTML = `
+                        <div class="move-number">${index + 1}.</div>
+                        <div class="move-white">${move.white}</div>
+                        <div class="move-black">${move.black}</div>
+                    `;
+                    
+                    movesList.appendChild(moveElement);
+                });
+            }
+            
+            // Handle square click for piece movement
+            function handleSquareClick(event) {
+                const square = event.currentTarget;
+                const allSquares = document.querySelectorAll('.square');
+                
+                // Remove existing selections
+                allSquares.forEach(sq => {
+                    sq.classList.remove('selected');
+                    sq.classList.remove('valid-move');
+                });
+                
+                // If a piece is on this square, select it
+                if (square.dataset.piece) {
+                    square.classList.add('selected');
+                    
+                    // Show valid moves (simplified for demo)
+                    const row = parseInt(square.dataset.row);
+                    const col = parseInt(square.dataset.col);
+                    
+                    // Generate some valid moves for demonstration
+                    const validMoves = [
+                        {row: row + 1, col},
+                        {row: row - 1, col},
+                        {row, col: col + 1},
+                        {row, col: col - 1},
+                        {row: row + 1, col: col + 1},
+                        {row: row + 1, col: col - 1},
+                        {row: row - 1, col: col + 1},
+                        {row: row - 1, col: col - 1}
+                    ];
+                    
+                    validMoves.forEach(move => {
+                        const targetSquare = document.querySelector(`.square[data-row="${move.row}"][data-col="${move.col}"]`);
+                        if (targetSquare) {
+                            targetSquare.classList.add('valid-move');
+                        }
+                    });
+                } else if (square.classList.contains('valid-move')) {
+                    // Move the selected piece to this square
+                    const selectedSquare = document.querySelector('.square.selected');
+                    if (selectedSquare) {
+                        square.textContent = selectedSquare.textContent;
+                        square.dataset.piece = selectedSquare.dataset.piece;
+                        selectedSquare.textContent = '';
+                        delete selectedSquare.dataset.piece;
+                        
+                        // Update move history
+                        const moveElement = document.createElement('div');
+                        moveElement.classList.add('move');
+                        const moveNumber = document.querySelectorAll('.move').length + 1;
+                        
+                        moveElement.innerHTML = `
+                            <div class="move-number">${moveNumber}.</div>
+                            <div class="move-white">${getMoveNotation(selectedSquare, square)}</div>
+                            <div class="move-black"></div>
+                        `;
+                        
+                        movesList.appendChild(moveElement);
+                        
+                        // Switch turn
+                        document.querySelector('.player-white').classList.remove('player-turn');
+                        document.querySelector('.player-black').classList.add('player-turn');
+                        
+                        // Scroll to bottom of moves list
+                        movesList.parentElement.scrollTop = movesList.parentElement.scrollHeight;
+                    }
+                }
+            }
+            
+            // Simplified move notation (for demo purposes)
+            function getMoveNotation(fromSquare, toSquare) {
+                const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+                const fromCol = parseInt(fromSquare.dataset.col);
+                const toCol = parseInt(toSquare.dataset.col);
+                const toRow = 8 - parseInt(toSquare.dataset.row);
+                
+                return files[fromCol].toUpperCase() + files[toCol] + toRow;
+            }
+            
+            // Initialize the page
+            initializeChessboard();
+            generateMoveHistory();
+            
+            // Timer functionality
+            let whiteTime = 900; // 15 minutes in seconds
+            let blackTime = 900;
+            let currentPlayer = 'white';
+            
+            function updateTimers() {
+                document.querySelector('.player-white .player-timer').textContent = 
+                    formatTime(whiteTime);
+                document.querySelector('.player-black .player-timer').textContent = 
+                    formatTime(blackTime);
+            }
+            
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            // Start the game timer
+            setInterval(() => {
+                if (currentPlayer === 'white') {
+                    whiteTime--;
+                } else {
+                    blackTime--;
+                }
+                updateTimers();
+            }, 1000);
+            
+            // Initial timer display
+            updateTimers();
+        });
+    </script>
+</body>
+</html>
